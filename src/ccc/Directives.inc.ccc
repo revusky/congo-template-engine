@@ -570,7 +570,7 @@ INJECT IncludeInstruction :
             Object result = parseExp.evaluate(env);
             assertNonNull(result, parseExp);
             if (result instanceof CharSequence) {
-                parse = StringUtil.getYesNo(asString(result));
+                parse = StringLiteral.getYesNo(asString(result));
             }
             else {
                 parse = parseExp.isTrue(env);
@@ -1301,7 +1301,6 @@ IgnorableWhitespace#void :
 INJECT TemplateHeaderElement :
     import java.util.*;
     import org.congocc.templates.*;
-    import static org.congocc.templates.extensions.StringUtil.*;
     import static org.congocc.templates.core.Wrap.*;
 {
 
@@ -1357,7 +1356,7 @@ INJECT TemplateHeaderElement :
 		}
 		if (param instanceof CharSequence) {
 			try {
-				return getYesNo(asString(param));
+				return StringLiteral.getYesNo(asString(param));
 			} catch (Exception e) {
 				throw new IllegalArgumentException(e);
 			}

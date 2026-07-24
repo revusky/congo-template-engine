@@ -490,7 +490,6 @@ INJECT StringLiteral :
    import org.congocc.templates.TemplateException;
    import org.congocc.templates.TemplateExceptionHandler;
    import org.congocc.templates.core.Environment;
-   import static org.congocc.templates.extensions.StringUtil.CTLStringLiteralDec;
    implements Expression
 {
     private TemplateElement interpolatedOutput;
@@ -548,6 +547,34 @@ INJECT StringLiteral :
 
     public boolean isAssignableTo() {
         return true;
+    }
+
+    private static String CTLStringLiteralDec(String s) {
+        s = s.replace("\\g", ">");
+        s = s.replace("\\l", "<");
+        s = s.replace("\\a", "&");
+        s = s.replace("\\{", "{");
+        return s.translateEscapes();
+    }
+
+    static boolean getYesNo(String s) {
+        if (s.startsWith("\"")) {
+            s = s.substring(1, s.length() -1);
+
+        }
+        if (s.equalsIgnoreCase("n")
+                || s.equalsIgnoreCase("no")
+                || s.equalsIgnoreCase("f")
+                || s.equalsIgnoreCase("false")) {
+            return false;
+        }
+        else if  (s.equalsIgnoreCase("y")
+                || s.equalsIgnoreCase("yes")
+                || s.equalsIgnoreCase("t")
+                || s.equalsIgnoreCase("true")) {
+            return true;
+        }
+        throw new IllegalArgumentException("Illegal boolean value: " + s);
     }
 }
 
