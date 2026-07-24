@@ -335,11 +335,11 @@ INJECT AdditiveExpression :
     implements Expression;
 {
 
-    public Expression getLeft() {
+    public Expression lhs() {
         return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
         return (Expression) get(2);
     }
 
@@ -389,7 +389,7 @@ INJECT AdditiveExpression :
             }
             return result;
         }
-        return getLeft().getStringValue(env, left) + getRight().getStringValue(env, right);
+        return lhs().getStringValue(env, left) + rhs().getStringValue(env, right);
     }
 }
 
@@ -414,11 +414,11 @@ INJECT MultiplicativeExpression :
    import static org.congocc.templates.core.Wrap.getNumber;
    implements Expression
 {
-    public Expression getLeft() {
+    public Expression lhs() {
     	return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
     	return (Expression) get(2);
     }
 
@@ -439,15 +439,15 @@ INJECT MultiplicativeExpression :
         if (!bothNumbers) {
             String msg = "Error " + getLocation();
             if (!leftIsNumber) {
-                msg += "\nExpression " + getLeft() + " is not numerical";
+                msg += "\nExpression " + lhs() + " is not numerical";
             }
             if (!rightIsNumber) {
-                msg += "\nExpression " + getRight() + " is not numerical";
+                msg += "\nExpression " + rhs() + " is not numerical";
             }
             throw new TemplateException(msg);
         }
-        Number first = getNumber(leftSide, getLeft(), env);
-        Number second = getNumber(rightSide, getRight(), env);
+        Number first = getNumber(leftSide, lhs(), env);
+        Number second = getNumber(rightSide, rhs(), env);
         ArithmeticEngine ae =
             env != null
                 ? env.getArithmeticEngine()
@@ -485,11 +485,11 @@ INJECT EqualityExpression :
     import static org.congocc.templates.core.Wrap.*;
     implements Expression
 {
-    public Expression getLeft() {
+    public Expression lhs() {
         return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
         return (Expression) get(2);
     }
 
@@ -499,10 +499,10 @@ INJECT EqualityExpression :
 
     public boolean isTrue(Environment env) {
         TokenType operation = (TokenType) get(1).getType();
-        Object left = getLeft().evaluate(env);
-        Object right = getRight().evaluate(env);
-        assertIsDefined(left, getLeft());
-        assertIsDefined(right, getRight());
+        Object left = lhs().evaluate(env);
+        Object right = rhs().evaluate(env);
+        assertIsDefined(left, lhs());
+        assertIsDefined(right, rhs());
         if (left == JAVA_NULL || left == LOOSE_NULL) {
             boolean areEqual = (right == JAVA_NULL || right == LOOSE_NULL);
             return operation == NOT_EQUALS ? !areEqual : areEqual;
@@ -553,11 +553,11 @@ INJECT RelationalExpression :
     import static org.congocc.templates.core.Wrap.*;
     implements Expression;
 {
-    public Expression getLeft() {
+    public Expression lhs() {
         return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
         return (Expression) get(2);
     }
 
@@ -567,10 +567,10 @@ INJECT RelationalExpression :
 
     public boolean isTrue(Environment env) {
         TokenType operation = (TokenType) get(1).getType();
-        Object left = getLeft().evaluate(env);
-        Object right = getRight().evaluate(env);
-        assertNonNull(left, getLeft());
-        assertNonNull(right, getRight());
+        Object left = lhs().evaluate(env);
+        Object right = rhs().evaluate(env);
+        assertNonNull(left, lhs());
+        assertNonNull(right, rhs());
         if (!(left instanceof Number && right instanceof Number)) {
             throw new TemplateException("Can only compare numbers");
         }
@@ -603,11 +603,11 @@ INJECT RangeExpression :
    import static org.congocc.templates.core.Wrap.getNumber;
    implements Expression
 {
-    public Expression getLeft() {
+    public Expression lhs() {
         return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
         return hasRhs() ? (Expression) get(2) : null;
     }
 
@@ -616,10 +616,10 @@ INJECT RangeExpression :
     }
 
     public Object evaluate(Environment env) {
-        int min = getNumber(getLeft(), env).intValue();
+        int min = getNumber(lhs(), env).intValue();
         int max = 0;
         if (hasRhs()) {
-            max = getNumber(getRight(), env).intValue();
+            max = getNumber(rhs(), env).intValue();
             return new NumericalRange(min, max);
         }
         return new NumericalRange(min);
@@ -673,11 +673,11 @@ INJECT AndExpression :
     import org.congocc.templates.core.Environment;
     implements Expression
 {
-    public Expression getLeft() {
+    public Expression lhs() {
     	return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
     	return (Expression) get(2);
     }
 
@@ -686,7 +686,7 @@ INJECT AndExpression :
     }
 
     public boolean isTrue(Environment env) {
-        return getLeft().isTrue(env) && getRight().isTrue(env);
+        return lhs().isTrue(env) && rhs().isTrue(env);
     }
 }
 
@@ -702,11 +702,11 @@ INJECT OrExpression :
     import org.congocc.templates.core.Environment;
     implements Expression
 {
-    public Expression getLeft() {
+    public Expression lhs() {
     	return (Expression) get(0);
     }
 
-    public Expression getRight() {
+    public Expression rhs() {
     	return (Expression) get(2);
     }
 
@@ -715,7 +715,7 @@ INJECT OrExpression :
     }
 
     public boolean isTrue(Environment env) {
-        return getLeft().isTrue(env) || getRight().isTrue(env);
+        return lhs().isTrue(env) || rhs().isTrue(env);
     }
 }
 
@@ -813,11 +813,11 @@ INJECT DefaultToExpression :
     import static org.congocc.templates.core.Wrap.assertIsDefined;
     implements Expression
 {
-	public Expression getLeft() {
+	public Expression lhs() {
 		return (Expression) get(0);
 	}
 
-	public Expression getRight() {
+	public Expression rhs() {
 		return childrenOfType(Expression.class).size() == 2 ?
 		(Expression) getLastChild() : null;
 	}
@@ -825,15 +825,15 @@ INJECT DefaultToExpression :
 	public Object evaluate(Environment env) {
 		Object left = null;
 		try {
-			left = getLeft().evaluate(env);
+			left = lhs().evaluate(env);
 		} catch (InvalidReferenceException ire) {
-			if (!(getLeft() instanceof ParentheticalExpression)) {
+			if (!(lhs() instanceof ParentheticalExpression)) {
 				throw ire;
 			}
 		}
 		if (left != null && left != JAVA_NULL && left != LOOSE_NULL) return left;
-		if (getRight() == null) return LOOSE_NULL;
-		return getRight().evaluate(env);
+		if (rhs() == null) return LOOSE_NULL;
+		return rhs().evaluate(env);
 	}
 }
 

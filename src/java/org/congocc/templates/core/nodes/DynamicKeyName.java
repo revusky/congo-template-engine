@@ -74,29 +74,29 @@ public class DynamicKeyName extends TemplateNode implements Expression {
     }
 
     private Object dealWithRangeKey(Object target, RangeExpression range, Environment env) {
-        int start = getNumber(range.getLeft(), env).intValue();
+        int start = getNumber(range.lhs(), env).intValue();
         int end = 0;
         boolean hasRhs = range.hasRhs();
         if (hasRhs) {
-            end = getNumber(range.getRight(), env).intValue();
+            end = getNumber(range.rhs(), env).intValue();
         }
         if (isList(target)) {
             List<?> list = asList(target);
             if (!hasRhs) end = list.size() - 1;
             if (start < 0) {
-                String msg = range.getRight().getLocation() + "\nNegative starting index for range, is " + range;
+                String msg = range.rhs().getLocation() + "\nNegative starting index for range, is " + range;
                 throw new TemplateException(msg);
             }
             if (end < 0) {
-                String msg = range.getLeft().getLocation() + "\nNegative ending index for range, is " + range;
+                String msg = range.lhs().getLocation() + "\nNegative ending index for range, is " + range;
                 throw new TemplateException(msg);
             }
             if (start >= list.size()) {
-                String msg = range.getLeft().getLocation() + "\nLeft side index of range out of bounds, is " + start + ", but the sequence has only " + list.size() + " element(s) " + "(note that indices are 0 based, and ranges are inclusive).";
+                String msg = range.lhs().getLocation() + "\nLeft side index of range out of bounds, is " + start + ", but the sequence has only " + list.size() + " element(s) " + "(note that indices are 0 based, and ranges are inclusive).";
                 throw new TemplateException(msg);
             }
             if (end >= list.size()) {
-                String msg = range.getRight().getLocation() + "\nRight side index of range out of bounds, is " + end + ", but the sequence has only " + list.size() + " element(s)." + "(note that indices are 0 based, and ranges are inclusive).";
+                String msg = range.rhs().getLocation() + "\nRight side index of range out of bounds, is " + end + ", but the sequence has only " + list.size() + " element(s)." + "(note that indices are 0 based, and ranges are inclusive).";
                 throw new TemplateException(msg);
             }
             ArrayList<Object> result = new ArrayList<>();
@@ -114,19 +114,19 @@ public class DynamicKeyName extends TemplateNode implements Expression {
         String s = lhs().getStringValue(env);
         if (!hasRhs) end = s.length() - 1;
         if (start < 0) {
-            String msg = range.getLeft().getLocation() + "\nNegative starting index for range " + range + " : " + start;
+            String msg = range.lhs().getLocation() + "\nNegative starting index for range " + range + " : " + start;
             throw new TemplateException(msg);
         }
         if (end < 0) {
-            String msg = range.getLeft().getLocation() + "\nNegative ending index for range " + range + " : " + end;
+            String msg = range.lhs().getLocation() + "\nNegative ending index for range " + range + " : " + end;
             throw new TemplateException(msg);
         }
         if (start > s.length()) {
-            String msg = range.getLeft().getLocation() + "\nLeft side of range out of bounds, is: " + start + "\nbut string " + target + " has " + s.length() + " elements.";
+            String msg = range.lhs().getLocation() + "\nLeft side of range out of bounds, is: " + start + "\nbut string " + target + " has " + s.length() + " elements.";
             throw new TemplateException(msg);
         }
         if (end > s.length()) {
-            String msg = range.getRight().getLocation() + "\nRight side of range out of bounds, is: " + end + "\nbut string " + target + " is only " + s.length() + " characters.";
+            String msg = range.rhs().getLocation() + "\nRight side of range out of bounds, is: " + end + "\nbut string " + target + " is only " + s.length() + " characters.";
             throw new TemplateException(msg);
         }
         try {
