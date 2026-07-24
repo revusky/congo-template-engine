@@ -75,7 +75,6 @@ INJECT Token :
 
 INJECT PARSER_CLASS :
     import org.congocc.templates.*;
-    import org.congocc.templates.extensions.Extension;
     import java.util.HashSet;
     import java.util.List;
     import java.util.LinkedHashMap;

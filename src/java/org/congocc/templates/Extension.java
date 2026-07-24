@@ -1,4 +1,4 @@
-package org.congocc.templates.extensions;
+package org.congocc.templates;
 
 import org.congocc.templates.core.Environment;
 import org.congocc.templates.core.EvaluationException;

@@ -1,18 +1,18 @@
-package org.congocc.templates.extensions;
+package org.congocc.templates;
 
-import java.util.*;
+import java.util.StringTokenizer;
 
 /**
  *  Some text related utilities.
  *
  *  @version $Id: StringUtil.java,v 1.48 2005/06/01 22:39:08 ddekany Exp $
  */
-public class StringUtil {
+class StringUtil {
     /**
      *  HTML encoding (does not convert line breaks).
      *  Replaces all '&gt;' '&lt;' '&amp;' and '"' with entity reference
      */
-    public static String HTMLEnc(String s) {
+    static String HTMLEnc(String s) {
         return XMLOrXHTMLEnc(s, "'");
     }
 
@@ -20,7 +20,7 @@ public class StringUtil {
      *  XML Encoding.
      *  Replaces all '&gt;' '&lt;' '&amp;', "'" and '"' with entity reference
      */
-    public static String XMLEnc(String s) {
+    static String XMLEnc(String s) {
         return XMLOrXHTMLEnc(s, "&apos;");
     }
 
@@ -31,7 +31,7 @@ public class StringUtil {
      *  user agents, which do not decode "&apos;" to "'", so "&#39;" is used
      *  instead [see http://www.w3.org/TR/xhtml1/#C_16])
      */
-    public static String XHTMLEnc(String s) {
+    static String XHTMLEnc(String s) {
         return XMLOrXHTMLEnc(s, "&#39;");
     }
 
@@ -51,7 +51,7 @@ public class StringUtil {
         return buf.toString();
     }
 
-    public static String RTFEnc(String s) {
+    static String RTFEnc(String s) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
@@ -63,7 +63,7 @@ public class StringUtil {
         return buf.length() == s.length() ? s : buf.toString();
     }
 
-    public static String capitalize(String s) {
+    static String capitalize(String s) {
         StringTokenizer st = new StringTokenizer(s, " \t\r\n", true);
         StringBuilder buf = new StringBuilder(s.length());
         while (st.hasMoreTokens()) {
@@ -77,7 +77,7 @@ public class StringUtil {
     /**
      * Removes the line-break from the end of the string.
      */
-    public static String chomp(String s) {
+    static String chomp(String s) {
         if (s.endsWith("\r\n")) return s.substring(0, s.length() - 2);
         char lastChar = s.length() == 0 ? 0 : s.charAt(s.length()-1);
         return (lastChar != '\n' && lastChar != '\r') ? s : s.substring(0, s.length() - 1);
@@ -94,7 +94,7 @@ public class StringUtil {
      *
      * @see #jQuote(String)
      */
-    public static String javaStringEncode(String s) {
+    static String javaStringEncode(String s) {
         int ln = s.length();
         for (int i = 0; i < ln; i++) {
             char c = s.charAt(i);
@@ -150,7 +150,7 @@ public class StringUtil {
      * 0x20, that has no dedicated escape sequence in JavaScript language, will
      * be replaced with hexadecimal escape (<tt>\x<i>XX</i></tt>).
      */
-    public static String javaScriptStringEnc(String s) {
+    static String javaScriptStringEnc(String s) {
         int ln = s.length();
         for (int i = 0; i < ln; i++) {
             char c = s.charAt(i);

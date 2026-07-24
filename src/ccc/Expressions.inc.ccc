@@ -960,10 +960,6 @@ INJECT NamedArgsList :
         return namedArgs.size();
     }
 
-    public Map<String,Expression> getCopyOfMap() {
-        return (Map<String,Expression>)namedArgs.clone();
-    }
-
     public Map<String, Object> getParameterMap(Object target, Environment env) {
         Map<String, Object> result = null;
         result = new HashMap<String, Object>();
@@ -1059,9 +1055,9 @@ INJECT DotExpression :
     import org.congocc.templates.core.Environment;
     import org.congocc.templates.core.reflection.JavaMethodCall;
     import org.congocc.templates.core.reflection.JavaConstructorCall;
-    import org.congocc.templates.extensions.*;
     import org.congocc.templates.core.nodes.ExtensionExpression;
     import org.congocc.templates.core.nodes.MethodCall;
+    import org.congocc.templates.Extension;
     extends TemplateNode implements Expression
 {
     private Extension ext;
