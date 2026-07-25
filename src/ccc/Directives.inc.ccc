@@ -498,7 +498,7 @@ AssignmentInstruction#org.congocc.templates.core.nodes.AssignmentInstruction :
    <EQUALS> =>||
    Expression
    (
-     ENSURE {!(getTokenImage(1).equals("in") && getTokenType(2) != EQUALS)}
+     ENSURE {!(tokenImage(1).equals("in") && getTokenType(2) != EQUALS)}
      [<COMMA>]
      (
         <ID>
