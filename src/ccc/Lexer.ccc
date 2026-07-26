@@ -436,6 +436,10 @@ INJECT Identifier :
     public boolean isAssignableTo() {
         return true;
     }
+
+    public boolean isConstant() {
+        return false;
+    }
 }
 
 INJECT NullLiteral :
@@ -445,6 +449,10 @@ INJECT NullLiteral :
 {
     public Object evaluate(Environment env) {
         return JAVA_NULL;
+    }
+
+    public boolean isConstant() {
+        return true;
     }
 }
 
@@ -458,6 +466,10 @@ INJECT BooleanLiteral :
 
     public Boolean evaluate(Environment env) {
         return isTrue(env);
+    }
+
+    public boolean isConstant() {
+        return true;
     }
 }
 
@@ -483,6 +495,10 @@ INJECT NumberLiteral :
         value = template != null ?
                 template.getArithmeticEngine().toNumber(s) :
                 new BigDecimal(s);
+    }
+
+    public boolean isConstant() {
+        return true;
     }
 }
 
@@ -513,12 +529,16 @@ INJECT StringLiteral :
 
     public void checkInterpolation() {
     	String src = toString();
-        if (src.length() >5 && (src.indexOf("${") >= 0)) {
+        if (src.length() >5 && (src.indexOf("${") >= 0) || src.indexOf("$\\{")>=0) {
             CTLLexer token_source = new CTLLexer("input", value, CTLLexer.LexicalState.TEXT, getBeginLine(), getBeginColumn() +1);
             CTLParser parser = new CTLParser(token_source);
             parser.setTemplate(getTemplate());
             interpolatedOutput = parser.TemplateText();
         }
+    }
+
+    public boolean isConstant() {
+        return interpolatedOutput == null;
     }
 
     public Object evaluate(Environment env) {

@@ -13,7 +13,6 @@ import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.List;
 import java.util.ArrayList;
-import org.congocc.templates.core.nodes.*;
 
 public class MethodCall extends TemplateNode implements Expression {
 
@@ -23,6 +22,10 @@ public class MethodCall extends TemplateNode implements Expression {
 
     public Expression lhs() {
         return (Expression) get(0);
+    }
+
+    public boolean isConstant() {
+        return false;
     }
 
     public int numArgs() {
@@ -62,32 +65,57 @@ public class MethodCall extends TemplateNode implements Expression {
                 throw new EvaluationException("The method " + lhs() + " takes exactly one argument.");
             }
             Object arg = unwrap(argumentList.get(0));
-            return wrap(func.apply(arg));
+            try {
+                return wrap(func.apply(arg));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
         }
         if (leftSide instanceof BiFunction bif) {
             if (argumentList.size() != 2) {
                 throw new EvaluationException("The method " + lhs() + " takes exactly two arguments.");
             }
-            return wrap(bif.apply(unwrap(argumentList.get(0)), unwrap(argumentList.get(1))));
+            try {
+                return wrap(bif.apply(unwrap(argumentList.get(0)), unwrap(argumentList.get(1))));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
         }
         if (leftSide instanceof TriFunction trif) {
             if (argumentList.size() != 3) {
                 throw new EvaluationException("The method " + lhs() + " takes exactly three arguments.");
             }
-            return wrap(trif.apply(unwrap(argumentList.get(0)), unwrap(argumentList.get(1)), unwrap(argumentList.get(2))));
+            try {
+               return wrap(trif.apply(unwrap(argumentList.get(0)), unwrap(argumentList.get(1)), unwrap(argumentList.get(2))));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
         }
         if (leftSide instanceof QuadFunction quadf) {
             if (argumentList.size() != 4) {
                 throw new EvaluationException("The method " + lhs() + " takes exactly four arguments.");
             }
-            return wrap(quadf.apply(argumentList.get(0), argumentList.get(1), argumentList.get(2), argumentList.get(3)));
+            try {
+                return wrap(quadf.apply(argumentList.get(0), argumentList.get(1), argumentList.get(2), argumentList.get(3)));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
         }
         if (leftSide instanceof VarArgsFunction<?> targetMethod) {
             Object[] argArray =  argumentList.toArray();
             for (int i = 0; i < argArray.length; i++) {
                 argArray[i] = unwrap(argArray[i]);
             }
-            return wrap(targetMethod.apply(argArray));
+            try {
+               return wrap(targetMethod.apply(argArray));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
+        }
+        if (numArgs() ==0 && lhs() instanceof DotExpression de) {
+            if (de.isExtension()) {
+                return leftSide;
+            }
         }
         throw invalidTypeException(leftSide, lhs(), "method");
     }

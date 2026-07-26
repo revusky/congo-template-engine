@@ -44,6 +44,10 @@ public interface Extension {
      * to use in most cases.
      */
     static void register(String name, Extension ext) {
+        char firstChar = name.charAt(0);
+        if (firstChar <= 0x7F && Character.isLetter(firstChar) && Character.isLowerCase(firstChar)) {
+            throw new TemplateException("Illegal extension name: " + name + ". Extension names must start with an upper case letter.");
+        }
         Impl.knownExtensions.put(name, ext);
     }
 
@@ -52,8 +56,15 @@ public interface Extension {
      * extension is "foobar", then lhs.foobar will return
      * func.apply(lhs)
      */
-    static void register(String name, Function<Object,?> func) {
-        register(name, (exp, env) -> func.apply(exp.lhs().evaluate(env)));
+    @SuppressWarnings("unchecked")
+    static <T> void register(String name, Function<T,?> func) {
+        register(name, (exp, env) -> {
+            try {
+               return func.apply((T) exp.lhs().evaluate(env));
+            } catch (ClassCastException cce) {
+                throw new EvaluationException(cce);
+            }
+        });
     }
 
     /**
@@ -76,7 +87,7 @@ public interface Extension {
         if (ext == null) {
             throw new IllegalArgumentException("No extension " + existingName + " found.");
         }
-        register(altName, ext);
+        Impl.knownExtensions.put(altName, ext);
     }
 
     // Using inner class because you can't put a static initializer
@@ -117,21 +128,23 @@ public interface Extension {
             register("RTF", Impl::RTFEncode);
             register("Eval", Impl::Eval);
             register("C", Impl::C);
-            register("byte", Impl::byteCast);
-            register("double", Impl::doubleCast);
-            register("float", Impl::floatCast);
-            register("int", Impl::intCast);
-            register("long", Impl::longCast);
-            register("short", Impl::shortCast);
-            register("instanceof", Impl::IsInstance);
-            alias("InstanceOf", "instanceof");
+            register("Byte", Impl::byteCast);
+            register("Double", Impl::doubleCast);
+            register("Float", Impl::floatCast);
+            register("Int", Impl::intCast);
+            register("Long", Impl::longCast);
+            register("Short", Impl::shortCast);
+            register("Instanceof", Impl::IsInstance);
+            alias("InstanceOf", "Instanceof");
             alias("Websafe", "HTML");
-            alias("Int", "int");
-            alias("Double", "double");
-            alias("Float", "float");
-            alias("Byte", "byte");
-            alias("Long", "long");
-            alias("Short", "short");
+            //Allow the following because they are all keywords in Java anyway.
+            knownExtensions.put("int", knownExtensions.get("Int"));
+            knownExtensions.put("short", knownExtensions.get("Short"));
+            knownExtensions.put("byte", knownExtensions.get("Byte"));
+            knownExtensions.put("float", knownExtensions.get("Float"));
+            knownExtensions.put("double", knownExtensions.get("Double"));
+            knownExtensions.put("long", knownExtensions.get("Long"));
+            knownExtensions.put("instanceof", knownExtensions.get("Instanceof"));
         }
 
         private static List<Object> Reverse(Object arg) {
@@ -160,7 +173,7 @@ public interface Extension {
                     return null;
                 return Array.get(arg, 0);
             }
-            throw new EvaluationException("Expecting list or array");
+            throw new EvaluationException("Expecting a list or array");
         }
 
         private static Object Last(Object arg) {
@@ -174,7 +187,7 @@ public interface Extension {
                     return null;
                 return Array.get(arg, 0);
             }
-            throw new EvaluationException("Expecting list or array");
+            throw new EvaluationException("Expecting a list or an array");
         }
 
         private static int Size(Object arg) {
@@ -187,79 +200,47 @@ public interface Extension {
             if (arg.getClass().isArray()) {
                 return Array.getLength(arg);
             }
-            throw new EvaluationException("Expecting collection array");
+            throw new EvaluationException("Expecting a collection or a map or an array");
         }
 
-        private static List<Object> Keys(Object arg) {
-            if (arg instanceof Map m) {
-                return new ArrayList<Object>(m.keySet());
-            }
-            throw new EvaluationException("Expecting map");
+        private static List<Object> Keys(Map<?,?> m) {
+            return new ArrayList<Object>(m.keySet());
         }
 
-        private static List<Object> Values(Object arg) {
-            if (arg instanceof Map m) {
-                return new ArrayList<Object>(m.values());
-            }
-            throw new EvaluationException("Expecting map");
+        private static List<Object> Values(Map<?,?> m) {
+            return new ArrayList<Object>(m.values());
         }
 
-        private static int intCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.intValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static int intCast(Number n) {
+            return n.intValue();
         }
 
-        private static long longCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.longValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static long longCast(Number n) {
+            return n.longValue();
         }
 
-        private static float floatCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.floatValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static float floatCast(Number n) {
+            return n.floatValue();
         }
 
-        private static double doubleCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.doubleValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static double doubleCast(Number n) {
+            return n.doubleValue();
         }
 
-        private static byte byteCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.byteValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static byte byteCast(Number n) {
+            return n.byteValue();
         }
 
-        private static short shortCast(Object arg) {
-            if (arg instanceof Number n) {
-                return n.shortValue();
-            }
-            throw new EvaluationException("Expecting number");
+        private static short shortCast(Number n) {
+            return n.shortValue();
         }
 
-        private static String Capitalize(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return StringUtil.capitalize(s);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String Capitalize(CharSequence arg) {
+            return StringUtil.capitalize(arg.toString());
         }
 
-        private static String Chomp(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return StringUtil.chomp(s);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String Chomp(CharSequence arg) {
+            return StringUtil.chomp(arg.toString());
         }
 
         private static List<String> WordList(Object arg) {
@@ -283,20 +264,12 @@ public interface Extension {
             throw new EvaluationException("Expecting a string");
         }
 
-        private static String XHTMLEncode(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return StringUtil.XHTMLEnc(s);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String XHTMLEncode(CharSequence arg) {
+            return StringUtil.XHTMLEnc(arg.toString());
         }
 
-        private static String XMLEncode(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return StringUtil.XMLEnc(s);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String XMLEncode(CharSequence arg) {
+            return StringUtil.XMLEnc(arg.toString());
         }
 
         private static String JavaStringEncode(Object arg) {

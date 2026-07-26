@@ -4,9 +4,6 @@ import static org.congocc.templates.core.Wrap.*;
 
 import org.congocc.templates.core.Environment;
 import org.congocc.templates.core.reflection.ReflectionCode;
-import org.congocc.templates.core.nodes.Expression;
-import org.congocc.templates.core.nodes.RangeExpression;
-import org.congocc.templates.core.nodes.TemplateNode;
 import org.congocc.templates.TemplateException;
 
 import java.util.Map;
@@ -21,6 +18,10 @@ public class DynamicKeyName extends TemplateNode implements Expression {
 
     public Expression lhs() {
         return (Expression) get(0);
+    }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && getNameExpression().isConstant();
     }
 
     public Object evaluate(Environment env) {

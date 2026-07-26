@@ -75,6 +75,8 @@ INJECT Expression :
         }
         throw new EvaluationException("Expression cannot be evaluated to true/false.");
     }
+
+    boolean isConstant();
 }
 
 TernaryExpression :
@@ -102,6 +104,16 @@ INJECT TernaryExpression :
             return trueChoice.evaluate(env);
         }
         return falseChoice == null ? LOOSE_NULL : falseChoice.evaluate(env);
+    }
+
+    public boolean isConstant() {
+        Expression condition = (Expression) get(0);
+        if (!condition.isConstant()) {
+            return false;
+        }
+        boolean cond = condition.isTrue(null);
+        return cond && ((Expression) get(2)).isConstant()
+               || !cond && ((Expression) get(4)).isConstant();
     }
 }
 
@@ -191,6 +203,10 @@ INJECT ParentheticalExpression :
     public boolean isAssignableTo() {
         return getNested().isAssignableTo();
     }
+
+    public boolean isConstant() {
+        return getNested().isConstant();
+    }
 }
 
 INJECT PropertyReference :
@@ -210,6 +226,10 @@ INJECT PropertyReference :
 
     public boolean isAssignableTo() {
         return true;
+    }
+
+    public boolean isConstant() {
+        return false;
     }
 
     public Object evaluate(Environment env) {
@@ -266,6 +286,10 @@ INJECT NotExpression :
     public boolean isTrue(Environment env) {
         return (!getTarget().isTrue(env));
     }
+
+    public boolean isConstant() {
+        return getTarget().isConstant();
+    }
 }
 
 UnaryPlusMinusExpression :
@@ -311,6 +335,10 @@ INJECT UnaryPlusMinusExpression :
             return value;
         }
         return ArithmeticEngine.CONSERVATIVE_ENGINE.multiply(MINUS_ONE, value);
+    }
+
+    public boolean isConstant() {
+        return getTarget().isConstant();
     }
 }
 
@@ -391,6 +419,10 @@ INJECT AdditiveExpression :
         }
         return lhs().getStringValue(env, left) + rhs().getStringValue(env, right);
     }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
+    }
 }
 
 MultiplicativeExpression :
@@ -463,6 +495,10 @@ INJECT MultiplicativeExpression :
                 throw new TemplateException("unknown operation : " + operation);
         }
     }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
+    }
 }
 
 EqualityExpression :
@@ -495,6 +531,10 @@ INJECT EqualityExpression :
 
     public Object evaluate(Environment env) {
         return isTrue(env);
+    }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
     }
 
     public boolean isTrue(Environment env) {
@@ -584,6 +624,10 @@ INJECT RelationalExpression :
             default -> throw new InternalError();
         };
     }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
+    }
 }
 
 RangeExpression :
@@ -627,6 +671,10 @@ INJECT RangeExpression :
 
     public boolean isTrue(Environment env) {
         return size() > 0;
+    }
+
+    public boolean isConstant() {
+        return (!hasRhs() || rhs().isConstant()) && lhs().isConstant();
     }
 
     private class NumericalRange extends AbstractList<Integer> {
@@ -688,6 +736,10 @@ INJECT AndExpression :
     public boolean isTrue(Environment env) {
         return lhs().isTrue(env) && rhs().isTrue(env);
     }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
+    }
 }
 
 OrExpression :
@@ -716,6 +768,10 @@ INJECT OrExpression :
 
     public boolean isTrue(Environment env) {
         return lhs().isTrue(env) || rhs().isTrue(env);
+    }
+
+    public boolean isConstant() {
+        return lhs().isConstant() && rhs().isConstant();
     }
 }
 
@@ -753,6 +809,10 @@ INJECT ListLiteral :
         }
         return result;
     }
+
+    public boolean isConstant() {
+        return getElements().stream().allMatch(e->e.isConstant());
+    }
 }
 
 BuiltinVariable :
@@ -779,6 +839,10 @@ INJECT BuiltinVariable :
 
     public String getName() {
         return name;
+    }
+
+    public boolean isConstant() {
+        return false;
     }
 
     public Object evaluate(Environment env) {
@@ -818,9 +882,15 @@ INJECT DefaultToExpression :
 	}
 
 	public Expression rhs() {
-		return childrenOfType(Expression.class).size() == 2 ?
+		return size() == 3 ?
 		(Expression) getLastChild() : null;
 	}
+
+    public boolean isConstant() {
+        if (!lhs().isConstant()) return false;
+        if (size() == 2) return true;
+        return rhs().isConstant();
+    }
 
 	public Object evaluate(Environment env) {
 		Object left = null;
@@ -848,6 +918,10 @@ INJECT ExistsExpression :
 		return (Expression) get(0);
 	}
 
+    public boolean isConstant() {
+        return getExpression().isConstant();
+    }
+
 	public Object evaluate(Environment env) {
 		Object value = null;
 		try {
@@ -874,7 +948,6 @@ INJECT PositionalArgsList :
     import org.congocc.templates.core.Environment;
     import org.congocc.templates.core.EvaluationException;
     import org.congocc.templates.utility.UndeclaredThrowableException;
-    import org.congocc.templates.core.nodes.ParameterList;
     import static org.congocc.templates.core.Wrap.assertIsDefined;
     import static org.congocc.templates.core.Wrap.JAVA_NULL;
     extends ArgsList
@@ -934,7 +1007,6 @@ NamedArgsList :
 INJECT NamedArgsList :
     import java.util.*;
     import org.congocc.templates.core.Environment;
-    import org.congocc.templates.core.nodes.ParameterList;
     import org.congocc.templates.core.parser.ParseException;
     import org.congocc.templates.*;
     import static org.congocc.templates.core.Wrap.*;
@@ -1048,14 +1120,16 @@ INJECT HashLiteral :
     public List<Expression> getValues() {
     	return Collections.unmodifiableList(values);
     }
+
+    public boolean isConstant() {
+        return childrenOfType(Expression.class).stream().allMatch(e->e.isConstant());
+    }
 }
 
 INJECT DotExpression :
     import org.congocc.templates.core.Environment;
     import org.congocc.templates.core.reflection.JavaMethodCall;
     import org.congocc.templates.core.reflection.JavaConstructorCall;
-    import org.congocc.templates.core.nodes.ExtensionExpression;
-    import org.congocc.templates.core.nodes.MethodCall;
     import org.congocc.templates.Extension;
     extends TemplateNode implements Expression
 {
@@ -1068,6 +1142,14 @@ INJECT DotExpression :
 
     public Expression lhs() {
         return (Expression) get(0);
+    }
+
+    public boolean isConstant() {
+        return false;
+    }
+
+    public boolean isExtension() {
+        return ext != null;
     }
 
     public boolean isInInvocation() {

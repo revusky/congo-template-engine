@@ -94,13 +94,13 @@ class StringUtil {
      *
      * @see #jQuote(String)
      */
-    static String javaStringEncode(String s) {
+    static String javaStringEncode(CharSequence s) {
         int ln = s.length();
         for (int i = 0; i < ln; i++) {
             char c = s.charAt(i);
             if (c == '"' || c == '\\' || c < 0x20) {
                 StringBuilder b = new StringBuilder(ln + 4);
-                b.append(s.substring(0, i));
+                b.append(s.subSequence(0, i));
                 while (true) {
                     if (c == '"') {
                         b.append("\\\"");
@@ -137,7 +137,7 @@ class StringUtil {
                 }
             } // if has to be escaped
         } // for each characters
-        return s;
+        return s.toString();
     }
 
     /**

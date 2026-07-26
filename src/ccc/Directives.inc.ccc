@@ -445,7 +445,6 @@ INJECT BlockAssignment :
     import org.congocc.templates.core.UserDirectiveBody;
     import org.congocc.templates.core.scopes.Scope;
     import org.congocc.templates.TemplateException;
-    import org.congocc.templates.core.nodes.AssignmentInstruction;
     implements TemplateElement
 {
     public Expression getTargetExpression() {
@@ -778,7 +777,6 @@ Function#Macro :
 
 INJECT Macro :
     import org.congocc.templates.core.Environment;
-    import org.congocc.templates.core.nodes.ParameterList;
     implements TemplateElement
 {
     static public final Macro DO_NOTHING_MACRO = new Macro();
@@ -848,7 +846,6 @@ UnifiedCall :
 INJECT UnifiedCall :
     import java.util.*;
     import org.congocc.templates.core.Environment;
-    import org.congocc.templates.core.nodes.ParameterList;
     import org.congocc.templates.TemplateException;
     import static org.congocc.templates.core.Wrap.*;
     implements TemplateElement
@@ -1171,7 +1168,6 @@ TextElement# :
 
 INJECT TextElement :
    import org.congocc.templates.core.Environment;
-   import org.congocc.templates.core.nodes.AssignmentInstruction;
    implements TemplateElement
 {
     private String outputText;
