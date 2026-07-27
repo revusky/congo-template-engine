@@ -49,7 +49,7 @@ public class TemplateException extends RuntimeException {
      * so you might prefer to use Environment#getElementStack() and format the items in
      * list yourself.
      */
-    public String getCTLInstructionStack() {
+    private String getCTLInstructionStack() {
     	StringBuilder buf = new StringBuilder("----------\n");
     	if (ctlStack != null) {
         	boolean atFirstElement = true;
