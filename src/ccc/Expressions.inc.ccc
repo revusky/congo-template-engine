@@ -847,6 +847,7 @@ INJECT BuiltinVariable :
 
     public Object evaluate(Environment env) {
         switch (name) {
+           case "Env" : return env;
            case "Namespace" : return env.getCurrentNamespace();
            case "Main" : return env.getMainNamespace();
            case "Globals" : return env;
@@ -859,7 +860,7 @@ INJECT BuiltinVariable :
                        return env.getVariable(key);
                    }
                };
-           case "Locale" : return env.getLocale().toString();
+           case "Locale" : return env.getLocale();
            case "Lang" : return env.getLocale().getLanguage();
            case "Pass" : return Macro.DO_NOTHING_MACRO;
            case "Name" : return env.getTemplate().getName();
