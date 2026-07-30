@@ -45,7 +45,8 @@ public class MethodCall extends TemplateNode implements Expression {
             try {
                 env.setBuffer(newBuffer);
                 env.render(func, args, null, null);
-            } finally {
+            }
+            finally {
                 env.setBuffer(prevBuffer);
             }
             return func.isFunction() ? env.getLastReturnValue() : newBuffer.toString();

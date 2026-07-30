@@ -122,9 +122,13 @@ public final class Environment implements Scope {
     /**
      * Processes the template to which this environment belongs.
      */
-    public void process() {
+    public void process() throws IOException {
         Environment savedEnv = threadEnv.get();
         threadEnv.set(this);
+        Map<String,String> autoImports = getTemplateFactory().getAutoImports();
+        for (Entry<String,String> entry : autoImports.entrySet()) {
+            importLib(entry.getValue(), entry.getKey());
+        }
         try {
             Template template = getTemplate();
             render(template.getRootElement());
@@ -348,7 +352,9 @@ public final class Environment implements Scope {
             try {
                 render(macro.getNestedBlock());
             } catch (ReturnException re) {
-            } catch (TemplateException te) {
+                setLastReturnValue(re.returnValue);
+            }
+            catch (TemplateException te) {
                 handleTemplateException(te);
             } finally {
                 if (prevMc != null) {

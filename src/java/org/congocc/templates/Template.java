@@ -101,7 +101,7 @@ public class Template {
     public String process(Map<String,Object> rootMap) throws IOException
     {
         Environment env = new Environment(this, rootMap);
-        getTemplateFactory().doAutoImports(env);
+//        getTemplateFactory().doAutoImports(env);
         env.process();
         return env.getOutput();
     }
@@ -118,7 +118,7 @@ public class Template {
         Environment env = new Environment(this, rootMap);
         env.setLocale(getLocale());
         env.setBuffer(appendable);
-        getTemplateFactory().doAutoImports(env);
+        //getTemplateFactory().doAutoImports(env);
         env.process();
     }
 

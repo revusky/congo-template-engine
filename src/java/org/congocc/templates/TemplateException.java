@@ -16,10 +16,10 @@ import org.congocc.templates.core.nodes.TemplateElement;
  */
 public class TemplateException extends RuntimeException {
 
-    private List<TemplateElement> ctlStack=new ArrayList<>();
+    private List<TemplateElement> ctlStack = new ArrayList<>();
 
     public TemplateException(String message) {
-        this(message,null);
+        this(message, null);
     }
 
     /**
@@ -28,52 +28,49 @@ public class TemplateException extends RuntimeException {
      * to be raised.
      *
      * @param description the description of the error that occurred
-     * @param cause the underlying <code>Exception</code> that caused this
-     * exception to be raised
+     * @param cause       the underlying <code>Exception</code> that caused this
+     *                    exception to be raised
      */
     public TemplateException(String description, Exception cause) {
         super(description, cause);
         Environment env = Environment.getCurrentEnvironment();
-        if(env != null) {
+        if (env != null) {
             ctlStack = env.getElementStack();
         }
     }
 
     public TemplateException(Exception cause) {
-        this(null,cause);
+        this(null, cause);
     }
 
-    /**
-     * Returns the quote of the problematic CTL instruction and the CTL stack strace.
-     * We provide access to the CTL instruction stack
-     * so you might prefer to use Environment#getElementStack() and format the items in
-     * list yourself.
-     */
     private String getCTLInstructionStack() {
-    	StringBuilder buf = new StringBuilder("----------\n");
-    	if (ctlStack != null) {
-        	boolean atFirstElement = true;
-    		for (TemplateElement location : ctlStack) {
-    			if (atFirstElement) {
-    				atFirstElement = false;
-    	            buf.append("==> ");
-    	            buf.append(location.getDescription());
-    	            buf.append(" [");
-    	            buf.append(location.getLocation());
-    	            buf.append("]\n");
-    			} else if (location instanceof UnifiedCall || location instanceof IncludeInstruction){ // We only show macro calls and includes
-                    String line = location.getDescription() + " ["
-                    + location.getLocation() + "]";
-                    if (line != null && line.length() > 0) {
-                    	buf.append(" in ");
-                    	buf.append(line);
-                    	buf.append("\n");
-                    }
-    			}
-    		}
-        	buf.append("----------\n");
-    	}
-    	return buf.toString();
+        if (ctlStack == null || ctlStack.isEmpty()) {
+            return "";
+        }
+        StringBuilder buf = new StringBuilder("----------\n");
+        boolean atFirstElement = true;
+        for (TemplateElement location : ctlStack) {
+            if (atFirstElement) {
+                atFirstElement = false;
+                buf.append("==> ");
+                buf.append(location.getDescription());
+                buf.append(" [");
+                buf.append(location.getLocation());
+                buf.append("]\n");
+            } else if (location instanceof UnifiedCall || location instanceof IncludeInstruction) { // We only show
+                                                                                                    // macro calls and
+                                                                                                    // includes
+                String line = location.getDescription() + " ["
+                        + location.getLocation() + "]";
+                if (line != null && line.length() > 0) {
+                    buf.append(" in ");
+                    buf.append(line);
+                    buf.append("\n");
+                }
+            }
+        }
+        buf.append("----------\n");
+        return buf.toString();
     }
 
     public List<TemplateElement> getCTLStack() {

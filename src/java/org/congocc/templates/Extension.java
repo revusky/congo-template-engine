@@ -125,15 +125,16 @@ public interface Extension {
             register("HTML", Impl::HTMLEncode);
             register("XML", Impl::XMLEncode);
             register("XHTML", Impl::XHTMLEncode);
+            register("RTF", StringUtil::RTFEnc);
             register("RTF", (Function<CharSequence,String>) cs->StringUtil.RTFEnc(cs));
             register("Eval", Impl::Eval);
             register("C", Impl::C);
-            register("Byte", (Function<Number,Byte>) n->n.byteValue());
-            register("Double", (Function<Number,Double>) n->n.doubleValue());
-            register("Float", (Function<Number,Float>) n->n.floatValue());
-            register("Int", (Function<Number,Integer>) n->n.intValue());
-            register("Long", (Function<Number,Long>) n->n.longValue());
-            register("Short", (Function<Number,Short>) n->n.shortValue());
+            register("Byte", Number::byteValue);
+            register("Double", Number::doubleValue);
+            register("Float", Number::floatValue);
+            register("Int", Number::intValue);
+            register("Long", Number::longValue);
+            register("Short", Number::shortValue);
             register("Instanceof", Impl::IsInstance);
             alias("InstanceOf", "Instanceof");
             alias("Websafe", "HTML");
@@ -274,12 +275,9 @@ public interface Extension {
             throw new EvaluationException("Expecting a string");
         }
 
-        private static String URLEncode(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return URLEncoder.encode(s, UTF_8);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String URLEncode(CharSequence arg) {
+            String s = arg.toString();
+            return URLEncoder.encode(arg.toString(), UTF_8);
         }
 
         public static Object Eval(DotExpression caller, Environment env) {

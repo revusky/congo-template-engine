@@ -31,9 +31,7 @@ public class TemplateFactory {
     private static TemplateFactory defaultFactory = new TemplateFactory();
     private boolean localizedLookup = true;
     private HashMap<String, Object> variables = new HashMap<String, Object>();
-    private Map<String, String> autoImportMap = new HashMap<String, String>();
-    private ArrayList<String> autoImports = new ArrayList<String>();
-    private ArrayList<String> autoIncludes = new ArrayList<String>();
+    private Map<String, String> autoImports = new LinkedHashMap<String, String>();
     private Map<String,Template> templateCache = Collections.synchronizedMap(new HashMap<>());
     private ArithmeticEngine arithmeticEngine = ArithmeticEngine.BIGDECIMAL_ENGINE;
     private String numberFormat = "number";
@@ -278,24 +276,16 @@ public class TemplateFactory {
     /**
      * Add an auto-imported template.
      * The importing will happen at the top of any template that
-     * is vended by this Configuration object.
+     * is vended by this TemplateFactory object.
      * @param namespace the name of the namespace into which the template is imported
      * @param template the name of the template
      */
     public synchronized void addAutoImport(String namespace, String template) {
-        autoImports.remove(namespace);
-        autoImports.add(namespace);
-        autoImportMap.put(namespace, template);
+        autoImports.put(namespace, template);
     }
 
-    void doAutoImports(Environment env) throws IOException {
-    	for (String namespace : autoImports) {
-            String templateName = autoImportMap.get(namespace);
-            env.importLib(templateName, namespace);
-        }
-    	for(String templateName: autoIncludes) {
-            env.include(getTemplate(templateName, env.getLocale()), false);
-        }
+    public synchronized Map<String,String> getAutoImports() {
+        return new LinkedHashMap<>(autoImports);
     }
 
     /**
