@@ -128,7 +128,6 @@ public interface Extension {
             register("RTF", StringUtil::RTFEnc);
             register("RTF", (Function<CharSequence,String>) cs->StringUtil.RTFEnc(cs));
             register("Eval", Impl::Eval);
-            register("C", Impl::C);
             register("Byte", Number::byteValue);
             register("Double", Number::doubleValue);
             register("Float", Number::floatValue);
@@ -309,21 +308,6 @@ public interface Extension {
                 }
                 return clazz.isInstance(object);
             };
-        }
-
-        private static Object C(DotExpression caller, Environment env) {
-            Object arg = caller.lhs().evaluate(env);
-            if (arg instanceof Number num) {
-                if (num instanceof Integer) {
-                    // We accelerate this fairly common case
-                    return num.toString();
-                } else {
-                    return (env == null ? Environment.getNewCNumberFormat() : env.getCNumberFormat()).format(num);
-                }
-            }
-            else {
-                throw new EvaluationException("Expecting a number on the left side of ?c");
-            }
         }
     }
 }

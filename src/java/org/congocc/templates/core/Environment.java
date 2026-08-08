@@ -353,8 +353,7 @@ public final class Environment implements Scope {
                 render(macro.getNestedBlock());
             } catch (ReturnException re) {
                 setLastReturnValue(re.returnValue);
-            }
-            catch (TemplateException te) {
+            } catch (TemplateException te) {
                 handleTemplateException(te);
             } finally {
                 if (prevMc != null) {
@@ -522,7 +521,7 @@ public final class Environment implements Scope {
      * This is always US English <code>"0.################"</code>, without
      * grouping and without superfluous decimal separator.
      */
-    public NumberFormat getCNumberFormat() {
+    private NumberFormat getCNumberFormat() {
         // It can't be cached in a static field, because DecimalFormat-s aren't
         // thread-safe.
         if (cNumberFormat == null) {
@@ -531,7 +530,7 @@ public final class Environment implements Scope {
         return cNumberFormat;
     }
 
-    public static NumberFormat getNewCNumberFormat() {
+    private static NumberFormat getNewCNumberFormat() {
         return (NumberFormat) C_NUMBER_FORMAT.clone();
     }
 
