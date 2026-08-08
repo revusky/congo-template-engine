@@ -125,15 +125,16 @@ public interface Extension {
             register("HTML", Impl::HTMLEncode);
             register("XML", Impl::XMLEncode);
             register("XHTML", Impl::XHTMLEncode);
-            register("RTF", Impl::RTFEncode);
+            register("RTF", StringUtil::RTFEnc);
+            register("RTF", (Function<CharSequence,String>) cs->StringUtil.RTFEnc(cs));
             register("Eval", Impl::Eval);
             register("C", Impl::C);
-            register("Byte", Impl::byteCast);
-            register("Double", Impl::doubleCast);
-            register("Float", Impl::floatCast);
-            register("Int", Impl::intCast);
-            register("Long", Impl::longCast);
-            register("Short", Impl::shortCast);
+            register("Byte", Number::byteValue);
+            register("Double", Number::doubleValue);
+            register("Float", Number::floatValue);
+            register("Int", Number::intValue);
+            register("Long", Number::longValue);
+            register("Short", Number::shortValue);
             register("Instanceof", Impl::IsInstance);
             alias("InstanceOf", "Instanceof");
             alias("Websafe", "HTML");
@@ -208,31 +209,7 @@ public interface Extension {
         }
 
         private static List<Object> Values(Map<?,?> m) {
-            return new ArrayList<Object>(m.values());
-        }
-
-        private static int intCast(Number n) {
-            return n.intValue();
-        }
-
-        private static long longCast(Number n) {
-            return n.longValue();
-        }
-
-        private static float floatCast(Number n) {
-            return n.floatValue();
-        }
-
-        private static double doubleCast(Number n) {
-            return n.doubleValue();
-        }
-
-        private static byte byteCast(Number n) {
-            return n.byteValue();
-        }
-
-        private static short shortCast(Number n) {
-            return n.shortValue();
+            return new ArrayList<>(m.values());
         }
 
         private static String Capitalize(CharSequence arg) {
@@ -298,12 +275,9 @@ public interface Extension {
             throw new EvaluationException("Expecting a string");
         }
 
-        private static String URLEncode(Object arg) {
-            if (arg instanceof CharSequence) {
-                String s = arg.toString();
-                return URLEncoder.encode(s, UTF_8);
-            }
-            throw new EvaluationException("Expecting a string");
+        private static String URLEncode(CharSequence arg) {
+            String s = arg.toString();
+            return URLEncoder.encode(arg.toString(), UTF_8);
         }
 
         public static Object Eval(DotExpression caller, Environment env) {

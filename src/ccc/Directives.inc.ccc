@@ -319,11 +319,11 @@ INJECT ReturnInstruction :
         env.setLastReturnValue(getReturnValue(env));
         if (nextSibling() != null) {
             // We need to jump out using an exception.
-            throw RETURN;
+            throw new ReturnException(getReturnValue(env));
         }
         if (!(getParent() instanceof Macro || getParent().getParent() instanceof Macro)) {
             // Here also, we need to jump out using an exception.
-            throw RETURN;
+            throw new ReturnException(getReturnValue(env));
         }
     }
 
@@ -331,8 +331,15 @@ INJECT ReturnInstruction :
         return "return" + " [" + getLocation() + "]";
     }
 
-    private static final ReturnException RETURN = new ReturnException();
-    public static final class ReturnException extends RuntimeException {}
+    //private static final ReturnException RETURN = new ReturnException();
+    public static final class ReturnException extends RuntimeException {
+        public final Object returnValue;
+        public ReturnException(Object returnValue) {
+            this.returnValue = returnValue;
+        }
+        @Override
+        public Throwable fillInStackTrace() {return this;}
+    }
 }
 
 StopInstruction# :

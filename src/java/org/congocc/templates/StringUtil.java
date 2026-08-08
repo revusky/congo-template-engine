@@ -51,7 +51,7 @@ class StringUtil {
         return buf.toString();
     }
 
-    static String RTFEnc(String s) {
+    static String RTFEnc(CharSequence s) {
         StringBuilder buf = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             char ch = s.charAt(i);
@@ -60,7 +60,7 @@ class StringUtil {
             }
             buf.append(ch);
         }
-        return buf.length() == s.length() ? s : buf.toString();
+        return buf.length() == s.length() ? s.toString() : buf.toString();
     }
 
     static String capitalize(String s) {
