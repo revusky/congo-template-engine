@@ -1,9 +1,38 @@
 <project name="congo-templates" default="jar">
-    <target name="init">
-        <uptodate property="ctl.parser.uptodate"
+    <target name="check-parser-uptodate">
+        <uptodate property="parser.uptodate"
             targetfile="build/generated-java/org/congocc/templates/core/parser/CTLParser.java">
             <srcfiles dir="src/ccc" includes="*.ccc" />
         </uptodate>
+    </target>
+
+    <target name="congo-init">
+        <available
+           property="congo.jar.location"
+           file="../congocc.jar"
+           value="../congocc.jar"
+        />
+        <available
+           property="congo.jar.location"
+           file="../bin/congocc.jar"
+           value="../bin/congocc.jar"
+        />
+        <available
+           property="congo.jar.location"
+           file="bootstrap/congocc.jar"
+           value="bootstrap/congocc.jar"
+        />
+    </target>
+
+    <target name="get-congo-jar" depends="congo-init" unless="congo.jar.location">
+        <mkdir dir="bootstrap"/>
+        <echo>Downloading congo jar...</echo>
+        <get src="https://parsers.org/download/congocc.jar"
+             dest="bootstrap/congocc.jar"
+        />
+        <property name="congo.jar.location"
+                  value="bootstrap/congocc.jar"
+        />
     </target>
 
     <target name="clean">
@@ -11,8 +40,8 @@
         <delete dir="build" />
     </target>
 
-    <target name="build-parser" depends="init" unless="ctl.parser.uptodate">
-        <java fork="true" jar="bootstrap/congocc.jar" failonerror="true">
+    <target name="build-parser" depends="check-parser-uptodate,get-congo-jar" unless="parser.uptodate">
+        <java fork="true" jar="${congo.jar.location}" failonerror="true">
             <assertions>
                 <enable />
             </assertions>
@@ -21,7 +50,8 @@
     </target>
 
     <target name="compile" depends="build-parser">
-        <javac destdir="build"
+        <mkdir dir="build/classes"/>
+        <javac destdir="build/classes"
             deprecation="off"
             debug="on"
             optimize="off"
@@ -34,9 +64,9 @@
     </target>
 
     <target name="jar" depends="compile">
-        <copy file="LICENSE" todir="build"/>
+        <copy file="LICENSE" todir="build/classes"/>
         <jar jarfile="congo-templates.jar"
-            basedir="build"
+            basedir="build/classes"
             compress="true"
             includes="org/congocc/templates/**/*.class,LICENSE">
             <manifest>
