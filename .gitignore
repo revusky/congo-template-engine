@@ -1,6 +1,6 @@
 *.class
 congo-templates.jar
-bin/congocc.jar
+bootstrap/congocc.jar
 /build/*
 
 # My (revusky) VSCode workspace. If you use
